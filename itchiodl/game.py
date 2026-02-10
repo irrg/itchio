@@ -110,7 +110,7 @@ class Game:
 
     def do_download(self, d, token):
         """Download a single file, checking for existing files"""
-        filename = d["filename"] or d["display_name"] or str(d["id"])
+        filename = d.get("filename") or d.get("display_name") or str(d["id"])
         filename = utils.clean_path(filename)
 
         print(f"Downloading {filename}")
