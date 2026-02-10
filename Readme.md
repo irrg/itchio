@@ -1,9 +1,10 @@
-## IMPORTANT NOTICE: up until 2022-03-09, the package was called itchio, it is now called itchiodl (to avoid pypi conflicts)
-
 # Itchio Downloader Tool
+
+This is a fork of https://github.com/Emersont1/itchio with some fixes to actually get my own collection to finish downloading successfully. I'll open a PR for these changes, but, looking at the existing PRs on the source repo, this might turn into a full fork. 
+
 ## Install
 ```bash
-python3 -m pip install git+https://github.com/irrg/itchio.git
+pip install git+https://github.com/irrg/itchio.git
 ```
 ## Download All Games in library from account
 **Please Note:** Having too many jobs may cause rate-limiting from some testing 8 works fine but 10 starts giving errors.
