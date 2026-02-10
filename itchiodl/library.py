@@ -23,7 +23,11 @@ class Library:
             f"https://api.itch.io/profile/owned-keys?page={page}",
             headers={"Authorization": self.login},
         )
-        j = r.json()
+        try:
+            j = r.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"Failed to load page {page} (HTTP {r.status_code}), stopping pagination")
+            return 0
 
         for s in j["owned_keys"]:
             self.games.append(Game(s))
@@ -45,13 +49,22 @@ class Library:
             f"https://{publisher}.itch.io/{title}/data.json",
             headers={"Authorization": self.login},
         )
-        j = rsp.json()
+        try:
+            j = rsp.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"Failed to load game data for {publisher}/{title} "
+                  f"(HTTP {rsp.status_code})")
+            return
         game_id = j["id"]
         gsp = requests.get(
             f"https://api.itch.io/games/{game_id}/uploads",
             headers={"Authorization": self.login},
         )
-        k = gsp.json()
+        try:
+            k = gsp.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"Failed to load uploads for {title} (HTTP {gsp.status_code})")
+            return
         if k != {"uploads": {}}:
             self.games.append(Game(k))
             return
@@ -83,7 +96,11 @@ class Library:
                 f"https://api.itch.io/games/{game_id}",
                 headers={"Authorization": self.login},
             )
-            k = gsp.json()
+            try:
+                k = gsp.json()
+            except requests.exceptions.JSONDecodeError:
+                print(f"Failed to load game {game_id} (HTTP {gsp.status_code}), skipping")
+                continue
             self.games.append(Game(k))
 
     def download_library(self, platform=None):

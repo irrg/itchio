@@ -63,7 +63,12 @@ class Game:
                 f"https://api.itch.io/games/{self.game_id}/uploads",
                 headers={"Authorization": token},
             )
-        j = r.json()
+        try:
+            j = r.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"Failed to load downloads for {self.name} "
+                  f"(HTTP {r.status_code}), skipping")
+            return
         for d in j["uploads"]:
             self.downloads.append(d)
 
