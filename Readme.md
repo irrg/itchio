@@ -3,7 +3,7 @@
 # Itchio Downloader Tool
 ## Install
 ```bash
-pip install itchiodl
+python3 -m pip install git+https://github.com/irrg/itchio.git
 ```
 ## Download All Games in library from account
 **Please Note:** Having too many jobs may cause rate-limiting from some testing 8 works fine but 10 starts giving errors.

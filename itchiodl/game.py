@@ -117,24 +117,29 @@ class Game:
 
         out_file = self.dir / filename
 
+        md5_hash = d.get("md5_hash")
+
         if out_file.exists():
             print(f"File Already Exists! {filename}")
+            if not md5_hash:
+                print(f"Skipping {self.name} - {filename} (no hash to compare)")
+                return
             md5_file = out_file.with_suffix(".md5")
             if md5_file.exists():
                 with md5_file.open("r") as f:
                     md5 = f.read().strip()
-                    if md5 == d["md5_hash"]:
+                    if md5 == md5_hash:
                         print(f"Skipping {self.name} - {filename}")
                         return
                     print(f"MD5 Mismatch! {filename}")
             else:
                 md5 = utils.md5sum(str(out_file))
-                if md5 == d["md5_hash"]:
+                if md5 == md5_hash:
                     print(f"Skipping {self.name} - {filename}")
 
                     # Create checksum file
                     with md5_file.open("w") as f:
-                        f.write(d["md5_hash"])
+                        f.write(md5_hash)
                     return
                 # Old Download or corrupted file?
                 corrupted = False
@@ -210,10 +215,11 @@ class Game:
             return
 
         # Verify
-        if utils.md5sum(out_file) != d["md5_hash"]:
-            print(f"Failed to verify {filename}")
-            return
+        if md5_hash:
+            if utils.md5sum(out_file) != md5_hash:
+                print(f"Failed to verify {filename}")
+                return
 
-        # Create checksum file
-        with out_file.with_suffix(".md5").open("w") as f:
-            f.write(d["md5_hash"])
+            # Create checksum file
+            with out_file.with_suffix(".md5").open("w") as f:
+                f.write(md5_hash)
