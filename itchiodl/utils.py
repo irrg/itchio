@@ -8,10 +8,13 @@ class NoDownloadError(Exception):
     """No download found exception"""
 
 
-def download(url, path, name, file):
-    """Downloads a file from a url and saves it to a path, skips it if it already exists."""
+def download(url, path, name, filename):
+    """Downloads a file from a url and saves it to a path.
 
-    desc = f"{name} - {file}"
+    The filename should already be determined by the caller.
+    """
+
+    desc = f"{name} - {filename}"
     print(f"Downloading {desc}")
     rsp = requests.get(url, stream=True)
 
@@ -20,14 +23,6 @@ def download(url, path, name, file):
         or rsp.headers.get("Content-Disposition") is None
     ):
         raise NoDownloadError("Http response is not a download, skipping")
-
-    cd = rsp.headers.get("Content-Disposition")
-
-    filename_re = re.search(r'filename="(.+)"', cd)
-    if filename_re is None:
-        filename = file
-    else:
-        filename = filename_re.group(1)
 
     with open(f"{path}/{filename}", "wb") as f:
         for chunk in rsp.iter_content(10240):
@@ -38,14 +33,14 @@ def download(url, path, name, file):
 
 
 def clean_path(path):
-    """Cleans a path on windows"""
-    if sys.platform in ["win32", "cygwin", "msys"]:
-        path_clean = re.sub(r"[<>:|?*\"\/\\]", "-", path)
-        # This checks for strings that end in ... or similar,
-        # weird corner case that affects fewer than 0.1% of titles
-        path_clean = re.sub(r"(.)[.]\1+$", "-", path_clean)
-        return path_clean
-    return path
+    """Cleans a path for safe use on all platforms and filesystems"""
+    # Sanitize characters that are problematic on Windows, SMB/NFS shares,
+    # and various filesystems (ext4 over Samba, FAT32, etc.)
+    path_clean = re.sub(r'[<>:|?*"\/\\]', "-", path)
+    # This checks for strings that end in ... or similar,
+    # weird corner case that affects fewer than 0.1% of titles
+    path_clean = re.sub(r"(.)[.]\1+$", "-", path_clean)
+    return path_clean
 
 
 def md5sum(path):

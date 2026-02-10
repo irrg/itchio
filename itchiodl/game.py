@@ -105,9 +105,10 @@ class Game:
 
     def do_download(self, d, token):
         """Download a single file, checking for existing files"""
-        print(f"Downloading {d['filename']}")
+        filename = d["filename"] or d["display_name"] or str(d["id"])
+        filename = utils.clean_path(filename)
 
-        filename = d["filename"] or d["display_name"] or d["id"]
+        print(f"Downloading {filename}")
 
         out_file = self.dir / filename
 
@@ -148,7 +149,12 @@ class Game:
             f"https://api.itch.io/games/{self.game_id}/download-sessions",
             headers={"Authorization": token},
         )
-        j = r.json()
+        try:
+            j = r.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"Failed to start download session for {self.name} "
+                  f"(HTTP {r.status_code}), skipping {filename}")
+            return
 
         # Download
         if self.id:
